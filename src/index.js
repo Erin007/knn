@@ -1,6 +1,6 @@
-import { euclidean as euclideanDistance } from 'ml-distance-euclidean';
+import { euclidean as euclideanDistance } from "ml-distance-euclidean";
 
-import KDTree from './KDTree';
+import KDTree from "./KDTree";
 
 export default class KNN {
   /**
@@ -46,17 +46,17 @@ export default class KNN {
    * @return {KNN}
    */
   static load(model, distance = euclideanDistance) {
-    if (model.name !== 'KNN') {
+    if (model.name !== "KNN") {
       throw new Error(`invalid model: ${model.name}`);
     }
     if (!model.isEuclidean && distance === euclideanDistance) {
       throw new Error(
-        'a custom distance function was used to create the model. Please provide it again'
+        "a custom distance function was used to create the model. Please provide it again"
       );
     }
     if (model.isEuclidean && distance !== euclideanDistance) {
       throw new Error(
-        'the model was created with the default distance function. Do not load it with another one'
+        "the model was created with the default distance function. Do not load it with another one"
       );
     }
     return new KNN(true, model, distance);
@@ -68,7 +68,7 @@ export default class KNN {
    */
   toJSON() {
     return {
-      name: 'KNN',
+      name: "KNN",
       kdTree: this.kdTree,
       k: this.k,
       classes: Array.from(this.classes),
@@ -83,11 +83,11 @@ export default class KNN {
    */
   predict(dataset) {
     if (Array.isArray(dataset)) {
-      if (typeof dataset[0] === 'number') {
+      if (typeof dataset[0] === "number") {
         return getSinglePrediction(this, dataset);
       } else if (
         Array.isArray(dataset[0]) &&
-        typeof dataset[0][0] === 'number'
+        typeof dataset[0][0] === "number"
       ) {
         const predictions = new Array(dataset.length);
         for (var i = 0; i < dataset.length; i++) {
@@ -96,7 +96,15 @@ export default class KNN {
         return predictions;
       }
     }
-    throw new TypeError('dataset to predict must be an array or a matrix');
+    throw new TypeError("dataset to predict must be an array or a matrix");
+  }
+
+  regressionPredict(dataset) {
+    var nearestPoints = this.kdTree.nearest(dataset, this.k);
+    var nearestLabels = nearestPoints.map(
+      point => point[0][point[0].length - 1]
+    );
+    return nearestLabels.reduce((a, b) => a + b, 0) / this.k;
   }
 }
 
